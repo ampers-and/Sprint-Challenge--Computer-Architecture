@@ -54,7 +54,7 @@ class CPU:
             70: self.pop,
             80: self.call,
             17: self.ret,
-            167: self.cmp_,
+            167: self._cmp,
             84: self.jmp,
             85: self.jeq,
             86: self.jne,
@@ -114,8 +114,9 @@ class CPU:
         self.pc = self.ram_read(self.sp)
         self.sp += 1
 
-    def cmp_(self, reg_a, reg_b):
+    def _cmp(self, reg_a, reg_b):
         self.alu("CMP", reg_a, reg_b)
+        self.pc += 3
 
     def jmp(self, reg_a, reg_b):
         #reg_b not used
@@ -124,14 +125,14 @@ class CPU:
     def jeq(self, reg_a, reg_b):
         #reg_b not used
         if self.fl == 0b00000001:
-            self.jmp(self, reg_a, reg_b)
+            self.jmp(reg_a, reg_b)
         else:
             self.pc +=2
 
     def jne(self, reg_a, reg_b):
         #reg_b not used
         if self.fl != 0b00000001:
-            self.jmp(self, reg_a, reg_b)
+            self.jmp(reg_a, reg_b)
         else:
             self.pc +=2
 
@@ -163,7 +164,7 @@ class CPU:
                         program.append(int(num, 2))
 
 
-        print(program)
+        # print(program)
         for instruction in program:
             self.ram[address] = instruction
             address += 1
