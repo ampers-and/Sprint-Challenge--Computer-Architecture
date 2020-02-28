@@ -11,6 +11,8 @@ class CPU:
         self.ram = [0] * 256
         self.pc = 0
         self.running = True
+        self.fl = 0b00000000
+                #   00000LGE
 
         #stack pointer
         self.sp = self.reg[7]
@@ -33,6 +35,14 @@ class CPU:
         # RET = 0b00010001
         # # Halt - 1
         # HLT = 0b00000001
+        # # CMP 167
+        # CMP = 0b10100111
+        # # JMP 84
+        # JMP = 0b01010100
+    # # # JNE check if not equal flag 86
+        # JNE = 0b01010110
+    # # # JEQ check if equal flag 85
+        # JEQ = 0b01010101
 
         self.instructions = {
             130: self.ldi,
@@ -44,7 +54,10 @@ class CPU:
             70: self.pop,
             80: self.call,
             17: self.ret,
-
+            167: self.cmp_,
+            84: self.jmp,
+            85: self.jeq,
+            86: self.jne,
         }
 
     def ram_read(self, MAR):
@@ -101,6 +114,21 @@ class CPU:
         self.pc = self.ram_read(self.sp)
         self.sp += 1
 
+    def cmp_(self, reg_a, reg_b):
+        self.alu("CMP", reg_a, reg_b)
+
+    def jmp(self, reg_a, reg_b):
+        #reg_b not used
+        pass
+
+    def jeq(self, reg_a, reg_b):
+        #reg_b not used
+        pass
+
+    def jne(self, reg_a, reg_b):
+        #reg_b not used
+        pass
+
     def load(self):
         """Load a program into memory."""
 
@@ -145,6 +173,15 @@ class CPU:
         #mul
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
+
+        elif op == "CMP":
+            #   00000LGE
+            if self.reg[reg_a] == self.reg[reg_b]:
+                self.flag = 0b00000001
+            elif self.reg[reg_a] > self.reg[reg_b]:
+                self.flag = 0b00000010
+            elif self.reg[reg_a] < self.reg[reg_b]:
+                self.flag = 0b00000100
         else:
             raise Exception("Unsupported ALU operation")
 
