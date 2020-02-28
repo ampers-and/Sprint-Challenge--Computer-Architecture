@@ -119,7 +119,7 @@ class CPU:
 
     def jmp(self, reg_a, reg_b):
         #reg_b not used
-        pass
+        self.pc = self.reg[reg_a]
 
     def jeq(self, reg_a, reg_b):
         #reg_b not used
