@@ -7,10 +7,13 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        self.reg = [0] * 8
+        self.reg = [0] * 7 + [0xF4]
         self.ram = [0] * 256
         self.pc = 0
         self.running = True
+
+        #stack pointer
+        self.sp = self.reg[7]
 
         # # Load Immediate - 130
         # LDI = 0b10000010 
@@ -36,18 +39,18 @@ class CPU:
             71: self.prn,
             1: self.hlt,
             162: self.mul,
-            # 160: self.add,
-            # 69: self.push,
-            # 70: self.pop,
-            # 80: self.call,
-            # 17: self.ret,
+            160: self.add,
+            69: self.push,
+            70: self.pop,
+            80: self.call,
+            17: self.ret,
 
         }
 
     def ram_read(self, MAR):
       return self.ram[MAR]
     
-    def ram_write(self, MDR, MAR):
+    def ram_write(self, MAR, MDR):
       self.ram[MAR] = MDR
 
     def hlt(self):
@@ -59,6 +62,7 @@ class CPU:
         self.pc += 3
 
     def prn(self, reg_a, reg_b):
+        #reg_b not used
         print(self.reg[reg_a])
         self.pc += 2
 
@@ -66,6 +70,36 @@ class CPU:
         self.alu("MUL", reg_a, reg_b)
         self.pc += 3
 
+    def add(self, reg_a, reg_b):
+        self.alu("ADD", reg_a, reg_b)
+        self.pc += 3
+
+    def push(self, reg_a, reg_b):
+        #reg_b not used
+        self.sp -=  1
+        val = self.reg[reg_a]
+        self.ram_write(self.sp, val)
+        self.pc +=2
+
+    def pop(self, reg_a, reg_b):
+        #reg_b not used
+        val = self.ram_read(self.sp)
+        self.reg[reg_a] = val
+        self.sp += 1
+        self.pc += 2
+
+    def call(self):
+        value = self.pc + 2
+        self.sp -= 1
+        self.ram_write(self.sp, value)
+
+        reg = self.ram_read(self.pc + 1)
+        subroutine_address = self.reg[reg]
+        self.pc = subroutine_address
+
+    def ret(self):
+        self.pc = self.ram_read(self.sp)
+        self.sp += 1
 
     def load(self):
         """Load a program into memory."""
@@ -95,7 +129,7 @@ class CPU:
                         program.append(int(num, 2))
 
 
-
+        print(program)
         for instruction in program:
             self.ram[address] = instruction
             address += 1
@@ -109,7 +143,7 @@ class CPU:
         #elif op == "SUB": etc
 
         #mul
-        if op == "MUL":
+        elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
