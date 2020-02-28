@@ -35,29 +35,54 @@ class CPU:
         # RET = 0b00010001
         # # Halt - 1
         # HLT = 0b00000001
-        # # CMP 167
+        # # CMP - 167
         # CMP = 0b10100111
-        # # JMP 84
+        # # JMP - 84
         # JMP = 0b01010100
-    # # # JNE check if not equal flag 86
+        # # JNE - 86
         # JNE = 0b01010110
-    # # # JEQ check if equal flag 85
+        # # JEQ - 85
         # JEQ = 0b01010101
+
+        #STRETCH
+        # # And - 168
+        # AND = 0b10101000
+        # # Or - 170
+        # OR = 0b10101010
+        # # Xor - 171
+        # XOR = 0b10101011
+        # # Not - 209
+        # NOT = 0b1101001
+        # # Shl - 172
+        # SHL = 0b10101100
+        # # Shr - 173
+        # SHR = 0b10101101
+        # # Mod - 164
+        # MOD = 0b10100100
 
         self.instructions = {
             130: self.ldi,
             71: self.prn,
             1: self.hlt,
-            162: self.mul,
-            160: self.add,
+            162: self.mul,  #alu
+            160: self.add,  #alu
             69: self.push,
             70: self.pop,
             80: self.call,
             17: self.ret,
-            167: self._cmp,
+            167: self._cmp, #alu
             84: self.jmp,
             85: self.jeq,
             86: self.jne,
+            #Stretch
+            168: self._and, #alu
+            170: self._or,  #alu
+            171: self._xor, #alu
+            209: self._not, #alu
+            172: self._shl, #alu
+            173: self._shr, #alu
+            164: self._mod, #alu
+
         }
 
     def ram_read(self, MAR):
@@ -114,6 +139,8 @@ class CPU:
         self.pc = self.ram_read(self.sp)
         self.sp += 1
 
+    #SPRINT
+
     def _cmp(self, reg_a, reg_b):
         self.alu("CMP", reg_a, reg_b)
         self.pc += 3
@@ -135,6 +162,38 @@ class CPU:
             self.jmp(reg_a, reg_b)
         else:
             self.pc +=2
+
+    #STRETCH
+
+    def _and(self, reg_a, reg_b):
+        self.alu("AND", reg_a, reg_b)
+        self.pc += 3
+
+    def _or(self, reg_a, reg_b):
+        self.alu("OR", reg_a, reg_b)
+        self.pc += 3
+
+    def _xor(self, reg_a, reg_b):
+        self.alu("XOR", reg_a, reg_b)
+        self.pc += 3
+
+    def _not(self, reg_a, reg_b):
+        self.alu("NOT", reg_a, reg_b)
+        self.pc += 3
+
+    def _shl(self, reg_a, reg_b):
+        self.alu("SHL", reg_a, reg_b)
+        self.pc += 3
+
+    def _shr(self, reg_a, reg_b):
+        self.alu("SHR", reg_a, reg_b)
+        self.pc += 3
+
+    def _mod(self, reg_a, reg_b):
+        self.alu("MOD", reg_a, reg_b)
+        self.pc += 3
+    
+
 
     def load(self):
         """Load a program into memory."""
@@ -181,6 +240,7 @@ class CPU:
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
 
+        #SPRINT
         elif op == "CMP":
             #   00000LGE
             if self.reg[reg_a] == self.reg[reg_b]:
@@ -189,6 +249,30 @@ class CPU:
                 self.fl = 0b00000010
             elif self.reg[reg_a] < self.reg[reg_b]:
                 self.fl = 0b00000100
+
+        #STRETCH
+        elif op == "AND":
+            self.reg[reg_a] = self.reg[reg_a] & self.reg[reg_b]
+        elif op == "OR":
+            self.reg[reg_a] = self.reg[reg_a] | self.reg[reg_b]
+        elif op == "XOR":
+            self.reg[reg_a] = self.reg[reg_a] ^ self.reg[reg_b]
+        elif op == 'NOT':
+            self.reg[reg_a] = self.reg[reg_a] != self.reg[reg_b]
+
+        elif op == "SHL": #same as self.reg[reg_a] * ( 2 ** self.reg[reg_b])
+            self.reg[reg_a] = self.reg[reg_a] << self.reg[reg_b]
+
+        elif op == "SHR": #same as self.reg[reg_a] // ( 2 ** self.reg[reg_b])
+            self.reg[reg_a] = self.reg[reg_a] >> self.reg[reg_b]
+
+        elif op == "MOD":
+            if self.reg[reg_b] == 0:
+                print("Error: can't divide by 0")
+                self.hlt
+            else:
+                self.reg[reg_a] = self.reg[reg_a] % self.reg[reg_b]
+
         else:
             raise Exception("Unsupported ALU operation")
 
