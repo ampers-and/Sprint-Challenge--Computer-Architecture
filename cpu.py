@@ -123,11 +123,17 @@ class CPU:
 
     def jeq(self, reg_a, reg_b):
         #reg_b not used
-        pass
+        if self.fl == 0b00000001:
+            self.jmp(self, reg_a, reg_b)
+        else:
+            self.pc +=2
 
     def jne(self, reg_a, reg_b):
         #reg_b not used
-        pass
+        if self.fl != 0b00000001:
+            self.jmp(self, reg_a, reg_b)
+        else:
+            self.pc +=2
 
     def load(self):
         """Load a program into memory."""
@@ -177,11 +183,11 @@ class CPU:
         elif op == "CMP":
             #   00000LGE
             if self.reg[reg_a] == self.reg[reg_b]:
-                self.flag = 0b00000001
+                self.fl = 0b00000001
             elif self.reg[reg_a] > self.reg[reg_b]:
-                self.flag = 0b00000010
+                self.fl = 0b00000010
             elif self.reg[reg_a] < self.reg[reg_b]:
-                self.flag = 0b00000100
+                self.fl = 0b00000100
         else:
             raise Exception("Unsupported ALU operation")
 
